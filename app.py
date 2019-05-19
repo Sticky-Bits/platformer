@@ -20,6 +20,14 @@ class App:
         self.level_rect = self.level.get_rect()
         self.win_text, self.win_rect = self.make_text()
         self.obstacles = self.make_obstacles()
+        self.key_mapping = {
+            pg.K_1: (self.player.switch_weapon, 1),
+            pg.K_2: (self.player.switch_weapon, 2),
+            pg.K_3: (self.player.switch_weapon, 3),
+            pg.K_4: (self.player.switch_weapon, 4),
+            pg.K_5: (self.player.switch_weapon, 5),
+            pg.K_SPACE: (self.player.jump, self.obstacles),
+        }
 
     def make_text(self):
         """Renders a text object. Text is only rendered once."""
@@ -64,16 +72,17 @@ class App:
         self.viewport.clamp_ip(self.level_rect)
 
     def event_loop(self):
-        """We can always quit, and the player can sometimes jump."""
         for event in pg.event.get():
             if event.type == pg.QUIT or self.keys[pg.K_ESCAPE]:
                 self.done = True
             elif event.type == pg.KEYDOWN:
-                if event.key == pg.K_SPACE:
-                    self.player.jump(self.obstacles)
+                if event.key in self.key_mapping.keys():
+                    func = self.key_mapping[event.key]
+                    func[0](func[1])
             elif event.type == pg.KEYUP:
                 if event.key == pg.K_SPACE:
                     self.player.jump_cut()
+        self.player.shooting = bool(pg.mouse.get_pressed()[0])
 
     def update(self):
         """Update the player, obstacles, and current viewport."""

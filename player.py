@@ -1,6 +1,7 @@
 import pygame as pg
 
 from physics import Physics
+from guns import MachineGun
 
 
 class Player(Physics, pg.sprite.Sprite):
@@ -20,6 +21,10 @@ class Player(Physics, pg.sprite.Sprite):
         self.jump_cut_magnitude = -3.0
         self.on_moving = False
         self.collide_below = False
+        self.weapons = {
+            1: MachineGun(),
+        }
+        self.weapon = self.weapons[1]
 
     def check_keys(self, keys):
         """Find the player's self.x_vel based on currently held keys."""
@@ -115,7 +120,21 @@ class Player(Physics, pg.sprite.Sprite):
         self.check_keys(keys)
         self.get_position(obstacles)
         self.physics_update()
+        self.weapon_update()
+
+    def weapon_update(self):
+        if self.weapon.cooldown > 0:
+            self.weapon.cooldown -= 1
+        if self.shooting:
+            if self.weapon.cooldown <= 0:
+                self.weapon.shoot(1, (self.rect[0], self.rect[1]))
+        self.weapon.update()
 
     def draw(self, surface):
         """Blit the player to the target surface."""
         surface.blit(self.image, self.rect)
+        self.weapon.draw(surface)
+
+    def switch_weapon(self, slot):
+        self.weapon = self.weapons[slot]
+        pg.display.set_caption(f'weapon {slot}')
